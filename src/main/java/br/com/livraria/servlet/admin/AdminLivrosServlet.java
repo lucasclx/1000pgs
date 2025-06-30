@@ -21,6 +21,12 @@ import java.math.BigDecimal;
 import java.nio.file.Paths;
 import java.io.File;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder; // Importação adicionada
+import com.google.gson.TypeAdapter; // Importação adicionada
+import com.google.gson.stream.JsonReader; // Importação adicionada
+import com.google.gson.stream.JsonWriter; // Importação adicionada
+import com.google.gson.stream.JsonToken; // Importação adicionada
+import java.time.LocalDateTime; // Importação adicionada
 
 /**
  * Servlet para administração de livros
@@ -35,7 +41,33 @@ public class AdminLivrosServlet extends HttpServlet {
     private LivroDAO livroDAO = new LivroDAO();
     private CategoriaDAO categoriaDAO = new CategoriaDAO();
     private AutorDAO autorDAO = new AutorDAO();
-    private Gson gson = new Gson();
+    private Gson gson; // Alterado para não inicializar aqui
+
+    // Construtor adicionado para configurar o Gson
+    public AdminLivrosServlet() {
+        GsonBuilder gsonBuilder = new GsonBuilder();
+        // Registra um TypeAdapter para LocalDateTime para lidar com a serialização/desserialização
+        gsonBuilder.registerTypeAdapter(LocalDateTime.class, new TypeAdapter<LocalDateTime>() {
+            @Override
+            public void write(JsonWriter out, LocalDateTime value) throws IOException {
+                if (value == null) {
+                    out.nullValue();
+                } else {
+                    out.value(value.toString()); // Converte LocalDateTime para String para JSON
+                }
+            }
+
+            @Override
+            public LocalDateTime read(JsonReader in) throws IOException {
+                if (in.peek() == JsonToken.NULL) {
+                    in.nextNull();
+                    return null;
+                }
+                return LocalDateTime.parse(in.nextString()); // Converte String de JSON para LocalDateTime
+            }
+        });
+        this.gson = gsonBuilder.create();
+    }
     
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) 
@@ -43,7 +75,7 @@ public class AdminLivrosServlet extends HttpServlet {
         
         // Verificar se é admin
         if (!isAdmin(request)) {
-            response.sendError(HttpServletResponse.SC_FORBIDDEN);
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Acesso negado");
             return;
         }
         
@@ -118,7 +150,7 @@ public class AdminLivrosServlet extends HttpServlet {
             throws ServletException, IOException {
         
         if (!isAdmin(request)) {
-            response.sendError(HttpServletResponse.SC_FORBIDDEN);
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Acesso negado");
             return;
         }
         

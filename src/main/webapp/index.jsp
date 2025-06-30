@@ -8,7 +8,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Livraria Online - Sua próxima leitura está aqui!</title>
     
-    <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     
@@ -92,6 +91,12 @@
             height: 250px;
             object-fit: cover;
             width: 100%;
+            background: linear-gradient(45deg, #f8f9fa, #e9ecef);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #6c757d;
+            font-size: 3rem;
         }
         
         .book-card-body {
@@ -231,10 +236,19 @@
             align-items: center;
             justify-content: center;
         }
+        
+        /* Imagem de placeholder para livros */
+        .book-placeholder {
+            background: linear-gradient(45deg, #f8f9fa, #e9ecef);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #6c757d;
+            font-size: 2rem;
+        }
     </style>
 </head>
 <body>
-    <!-- Navbar -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top">
         <div class="container">
             <a class="navbar-brand" href="${pageContext.request.contextPath}/">
@@ -266,6 +280,13 @@
                 </ul>
                 
                 <div class="d-flex align-items-center">
+                    <%-- Botão de administração (adicionado aqui) --%>
+                    <c:if test="${sessionScope.isAdmin == true}">
+                        <a class="btn btn-outline-light me-2" href="${pageContext.request.contextPath}/admin/livros">
+                            <i class="fas fa-user-shield me-1"></i> Admin Livros
+                        </a>
+                    </c:if>
+                    
                     <div class="position-relative me-2">
                         <a href="${pageContext.request.contextPath}/carrinho" class="btn btn-outline-light">
                             <i class="fas fa-shopping-cart"></i>
@@ -307,7 +328,6 @@
         </div>
     </nav>
 
-    <!-- Hero Section -->
     <section class="hero-section">
         <div class="container">
             <div class="row align-items-center">
@@ -345,7 +365,6 @@
         </div>
     </section>
 
-    <!-- Estatísticas -->
     <section class="stats-section">
         <div class="container">
             <div class="row">
@@ -377,7 +396,6 @@
         </div>
     </section>
 
-    <!-- Categorias -->
     <section class="py-5">
         <div class="container">
             <div class="text-center mb-5">
@@ -420,7 +438,6 @@
         </div>
     </section>
 
-    <!-- Livros em Destaque -->
     <section class="py-5 bg-light" id="destaques">
         <div class="container">
             <div class="text-center mb-5">
@@ -436,8 +453,21 @@
                                 <span class="badge-promocao">PROMOÇÃO</span>
                             </c:if>
                             
-                            <img src="${livro.capa != null ? livro.capa : pageContext.request.contextPath}/img/livro-default.jpg" 
-                                 alt="${livro.titulo}" class="book-image">
+                            <c:choose>
+                                <c:when test="${not empty livro.capa}">
+                                    <img src="${livro.capa}" 
+                                         alt="${livro.titulo}" class="book-image"
+                                         onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                    <div class="book-image book-placeholder" style="display: none;">
+                                        <i class="fas fa-book"></i>
+                                    </div>
+                                </c:when>
+                                <c:otherwise>
+                                    <div class="book-image book-placeholder">
+                                        <i class="fas fa-book"></i>
+                                    </div>
+                                </c:otherwise>
+                            </c:choose>
                             
                             <div class="book-card-body">
                                 <c:if test="${livro.mediaAvaliacoes > 0}">
@@ -498,7 +528,6 @@
         </div>
     </section>
 
-    <!-- Newsletter -->
     <section class="py-5" style="background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);">
         <div class="container">
             <div class="row align-items-center">
@@ -518,7 +547,6 @@
         </div>
     </section>
 
-    <!-- Footer -->
     <footer class="footer">
         <div class="container">
             <div class="row">
@@ -587,9 +615,8 @@
         </div>
     </footer>
 
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
     <script>
         $(document).ready(function() {
@@ -628,6 +655,14 @@
                     showNotification('Por favor, informe um email válido.', 'error');
                 }
             });
+
+            // Inicializar tooltips apenas se existirem elementos com data-bs-toggle="tooltip"
+            const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            if (tooltipTriggerList.length > 0) {
+                tooltipTriggerList.map(function (tooltipTriggerEl) {
+                    return new bootstrap.Tooltip(tooltipTriggerEl);
+                });
+            }
         });
         
         function adicionarAoCarrinho(livroId) {
@@ -811,15 +846,6 @@
             statsObserver.observe(statsSection);
         }
         
-        // Busca com auto-complete (opcional)
-        $('input[name="busca"]').on('input', function() {
-            const termo = $(this).val();
-            if (termo.length >= 3) {
-                // Implementar sugestões de busca aqui
-                // $.ajax({ ... });
-            }
-        });
-        
         // Smooth scroll para âncoras
         $('a[href^="#"]').on('click', function(e) {
             e.preventDefault();
@@ -831,31 +857,6 @@
             }
         });
         
-        // Efeito paralaxe no hero
-        $(window).scroll(function() {
-            const scrolled = $(this).scrollTop();
-            const rate = scrolled * -0.5;
-            $('.hero-section').css('transform', `translate3d(0, ${rate}px, 0)`);
-        });
-        
-        // Lazy loading para imagens
-        if ('IntersectionObserver' in window) {
-            const imageObserver = new IntersectionObserver((entries, observer) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        const img = entry.target;
-                        img.src = img.dataset.src || img.src;
-                        img.classList.remove('lazy');
-                        imageObserver.unobserve(img);
-                    }
-                });
-            });
-            
-            document.querySelectorAll('img[data-src]').forEach(img => {
-                imageObserver.observe(img);
-            });
-        }
-        
         // Prevenção de double-click nos botões
         $('.btn').on('click', function() {
             const btn = $(this);
@@ -866,64 +867,6 @@
             setTimeout(() => {
                 btn.removeClass('processing');
             }, 1000);
-        });
-        
-        // Melhorar UX do carrinho
-        function updateCartUI() {
-            <c:if test="${not empty sessionScope.usuarioId}">
-                // Atualizar periodicamente o contador do carrinho
-                setInterval(atualizarContadorCarrinho, 30000); // A cada 30 segundos
-            </c:if>
-        }
-        
-        // Inicializar melhorias de UX
-        updateCartUI();
-        
-        // Animação de entrada da página
-        $(window).on('load', function() {
-            $('.hero-section h1').addClass('animate__animated animate__fadeInLeft');
-            $('.hero-section p').addClass('animate__animated animate__fadeInLeft animate__delay-1s');
-            $('.search-box').addClass('animate__animated animate__fadeInUp animate__delay-2s');
-        });
-        
-        // Tooltip para botões desabilitados
-        $('[data-bs-toggle="tooltip"]').tooltip();
-        
-        // Feedback visual melhorado
-        $('.btn-add-cart').hover(
-            function() {
-                if (!$(this).prop('disabled')) {
-                    $(this).find('i').addClass('fa-bounce');
-                }
-            },
-            function() {
-                $(this).find('i').removeClass('fa-bounce');
-            }
-        );
-        
-        // Confirmação de ações importantes
-        $('.btn-danger').on('click', function(e) {
-            if (!confirm('Tem certeza que deseja realizar esta ação?')) {
-                e.preventDefault();
-                return false;
-            }
-        });
-        
-        // Melhorar acessibilidade
-        $('.book-card').on('keypress', function(e) {
-            if (e.which === 13) { // Enter key
-                $(this).find('a').first()[0].click();
-            }
-        });
-        
-        // Auto-hide de notificações após tempo
-        $(document).on('shown.bs.alert', '.alert', function() {
-            const alert = $(this);
-            setTimeout(() => {
-                alert.fadeOut('slow', function() {
-                    $(this).remove();
-                });
-            }, 5000);
         });
     </script>
 </body>
