@@ -9,7 +9,7 @@ import java.util.List;
 /**
  * DAO para operações com categorias
  */
-class CategoriaDAO {
+public class CategoriaDAO {
     
     public List<Categoria> listarTodas() {
         List<Categoria> categorias = new ArrayList<>();

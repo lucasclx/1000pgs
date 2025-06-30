@@ -5,7 +5,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 // Classe Livro
-class Livro {
+public class Livro {
     private int id;
     private String titulo;
     private String descricao;

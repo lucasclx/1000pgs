@@ -9,7 +9,7 @@ import java.io.IOException;
 /**
  * Filtro de autenticação para páginas protegidas
  */
-class AuthenticationFilter implements Filter {
+public class AuthenticationFilter implements Filter {
     
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {}

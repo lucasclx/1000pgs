@@ -9,7 +9,7 @@ import java.util.List;
 /**
  * DAO para operações com autores
  */
-class AutorDAO {
+public class AutorDAO {
     
     public List<Autor> listarTodos() {
         List<Autor> autores = new ArrayList<>();

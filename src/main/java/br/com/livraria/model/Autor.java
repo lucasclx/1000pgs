@@ -4,8 +4,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
-// Classe Autor
-class Autor {
+public class Autor {
     private int id;
     private String nome;
     private String biografia;

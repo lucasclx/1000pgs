@@ -10,7 +10,7 @@ import java.math.BigDecimal;
 /**
  * DAO para operações com livros
  */
-class LivroDAO {
+public class LivroDAO {
     
     public List<Livro> listarTodos() {
         List<Livro> livros = new ArrayList<>();

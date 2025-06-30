@@ -10,7 +10,7 @@ import java.math.BigDecimal;
 /**
  * DAO para operações com carrinho
  */
-class CarrinhoDAO {
+public class CarrinhoDAO {
     
     public boolean adicionarItem(int usuarioId, int livroId, int quantidade) {
         String sql = "INSERT INTO carrinho (usuario_id, livro_id, quantidade) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE quantidade = quantidade + ?";

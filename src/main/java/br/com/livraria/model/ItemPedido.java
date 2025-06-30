@@ -5,7 +5,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 // Classe ItemPedido
-class ItemPedido {
+public class ItemPedido {
     private int id;
     private int pedidoId;
     private int livroId;

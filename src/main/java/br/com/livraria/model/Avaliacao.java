@@ -5,7 +5,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 // Classe Avaliacao
-class Avaliacao {
+public class Avaliacao {
     private int id;
     private int livroId;
     private int usuarioId;

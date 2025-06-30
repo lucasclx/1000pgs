@@ -11,7 +11,7 @@ import java.math.BigDecimal;
 /**
  * DAO para operações com pedidos
  */
-class PedidoDAO {
+public class PedidoDAO {
     
     public String criarPedido(int usuarioId, String enderecoEntrega, String codigoCupom) {
         String sql = "CALL sp_criar_pedido(?, ?, ?, @pedido_id, @numero_pedido)";

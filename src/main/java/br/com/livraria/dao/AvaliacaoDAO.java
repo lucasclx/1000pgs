@@ -9,7 +9,7 @@ import java.util.List;
 /**
  * DAO para operações com avaliações
  */
-class AvaliacaoDAO {
+public class AvaliacaoDAO {
     
     public boolean criarAvaliacao(Avaliacao avaliacao) {
         String sql = "INSERT INTO avaliacoes (livro_id, usuario_id, nota, comentario) VALUES (?, ?, ?, ?)";

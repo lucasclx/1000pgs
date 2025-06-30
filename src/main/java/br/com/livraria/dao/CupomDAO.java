@@ -8,7 +8,7 @@ import java.math.BigDecimal;
 /**
  * DAO para operações com cupons
  */
-class CupomDAO {
+public class CupomDAO {
     
     public Cupom buscarPorCodigo(String codigo) {
         String sql = "SELECT * FROM cupons WHERE codigo = ? AND ativo = TRUE";

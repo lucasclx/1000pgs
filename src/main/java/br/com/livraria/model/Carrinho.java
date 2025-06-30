@@ -5,7 +5,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 // Classe Carrinho
-class Carrinho {
+public class Carrinho {
     private int id;
     private int usuarioId;
     private int livroId;

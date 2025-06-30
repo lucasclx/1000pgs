@@ -5,7 +5,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 // Classe Cupom
-class Cupom {
+public class Cupom {
     private int id;
     private String codigo;
     private String descricao;
