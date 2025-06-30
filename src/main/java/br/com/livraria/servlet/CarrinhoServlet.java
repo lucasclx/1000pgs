@@ -16,7 +16,7 @@ import java.math.BigDecimal;
 /**
  * Servlet para operações do carrinho
  */
- @WebServlet("/carrinho")
+@WebServlet("/carrinho")
 public class CarrinhoServlet extends HttpServlet {
     private CarrinhoDAO carrinhoDAO = new CarrinhoDAO();
     
@@ -56,42 +56,21 @@ public class CarrinhoServlet extends HttpServlet {
         PrintWriter out = response.getWriter();
         
         try {
-            int livroId;
-            int quantidade;
-            boolean sucesso;
-            BigDecimal novoTotal;
-            int totalItens;
-
             switch (acao) {
                 case "adicionar":
-                    livroId = Integer.parseInt(request.getParameter("livroId"));
-                    quantidade = Integer.parseInt(request.getParameter("quantidade"));
-                    
-                    sucesso = carrinhoDAO.adicionarItem(usuarioId, livroId, quantidade);
-                    novoTotal = carrinhoDAO.calcularTotal(usuarioId);
-                    totalItens = carrinhoDAO.contarItens(usuarioId);
-                    
-                    out.print("{\"sucesso\": " + sucesso + ", \"novoTotal\": " + novoTotal + ", \"totalItens\": " + totalItens + "}");
+                    adicionarItem(request, response, out, usuarioId);
                     break;
                     
                 case "atualizar":
-                    livroId = Integer.parseInt(request.getParameter("livroId"));
-                    quantidade = Integer.parseInt(request.getParameter("quantidade"));
-                    
-                    sucesso = carrinhoDAO.atualizarQuantidade(usuarioId, livroId, quantidade);
-                    novoTotal = carrinhoDAO.calcularTotal(usuarioId);
-                    
-                    out.print("{\"sucesso\": " + sucesso + ", \"novoTotal\": " + novoTotal + "}");
+                    atualizarItem(request, response, out, usuarioId);
                     break;
                     
                 case "remover":
-                    livroId = Integer.parseInt(request.getParameter("livroId"));
+                    removerItem(request, response, out, usuarioId);
+                    break;
                     
-                    sucesso = carrinhoDAO.removerItem(usuarioId, livroId);
-                    novoTotal = carrinhoDAO.calcularTotal(usuarioId);
-                    totalItens = carrinhoDAO.contarItens(usuarioId);
-                    
-                    out.print("{\"sucesso\": " + sucesso + ", \"novoTotal\": " + novoTotal + ", \"totalItens\": " + totalItens + "}");
+                case "contar":
+                    contarItens(request, response, out, usuarioId);
                     break;
                     
                 default:
@@ -102,5 +81,64 @@ public class CarrinhoServlet extends HttpServlet {
         }
         
         out.flush();
+    }
+    
+    private void adicionarItem(HttpServletRequest request, HttpServletResponse response, 
+                              PrintWriter out, int usuarioId) {
+        try {
+            int livroId = Integer.parseInt(request.getParameter("livroId"));
+            int quantidade = Integer.parseInt(request.getParameter("quantidade"));
+            
+            boolean sucesso = carrinhoDAO.adicionarItem(usuarioId, livroId, quantidade);
+            BigDecimal novoTotal = carrinhoDAO.calcularTotal(usuarioId);
+            int totalItens = carrinhoDAO.contarItens(usuarioId);
+            
+            out.print("{\"sucesso\": " + sucesso + 
+                     ", \"novoTotal\": " + novoTotal + 
+                     ", \"totalItens\": " + totalItens + "}");
+        } catch (NumberFormatException e) {
+            out.print("{\"erro\": \"Parâmetros inválidos\"}");
+        }
+    }
+    
+    private void atualizarItem(HttpServletRequest request, HttpServletResponse response, 
+                              PrintWriter out, int usuarioId) {
+        try {
+            int livroId = Integer.parseInt(request.getParameter("livroId"));
+            int quantidade = Integer.parseInt(request.getParameter("quantidade"));
+            
+            boolean sucesso = carrinhoDAO.atualizarQuantidade(usuarioId, livroId, quantidade);
+            BigDecimal novoTotal = carrinhoDAO.calcularTotal(usuarioId);
+            int totalItens = carrinhoDAO.contarItens(usuarioId);
+            
+            out.print("{\"sucesso\": " + sucesso + 
+                     ", \"novoTotal\": " + novoTotal + 
+                     ", \"totalItens\": " + totalItens + "}");
+        } catch (NumberFormatException e) {
+            out.print("{\"erro\": \"Parâmetros inválidos\"}");
+        }
+    }
+    
+    private void removerItem(HttpServletRequest request, HttpServletResponse response, 
+                            PrintWriter out, int usuarioId) {
+        try {
+            int livroId = Integer.parseInt(request.getParameter("livroId"));
+            
+            boolean sucesso = carrinhoDAO.removerItem(usuarioId, livroId);
+            BigDecimal novoTotal = carrinhoDAO.calcularTotal(usuarioId);
+            int totalItens = carrinhoDAO.contarItens(usuarioId);
+            
+            out.print("{\"sucesso\": " + sucesso + 
+                     ", \"novoTotal\": " + novoTotal + 
+                     ", \"totalItens\": " + totalItens + "}");
+        } catch (NumberFormatException e) {
+            out.print("{\"erro\": \"Parâmetros inválidos\"}");
+        }
+    }
+    
+    private void contarItens(HttpServletRequest request, HttpServletResponse response, 
+                            PrintWriter out, int usuarioId) {
+        int totalItens = carrinhoDAO.contarItens(usuarioId);
+        out.print("{\"totalItens\": " + totalItens + "}");
     }
 }

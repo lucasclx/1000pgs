@@ -216,6 +216,21 @@
             color: #ffc107;
             margin-bottom: 0.5rem;
         }
+        
+        .cart-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #dc3545;
+            color: white;
+            border-radius: 50%;
+            min-width: 20px;
+            height: 20px;
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
     </style>
 </head>
 <body>
@@ -251,12 +266,12 @@
                 </ul>
                 
                 <div class="d-flex align-items-center">
-                    <a href="${pageContext.request.contextPath}/carrinho" class="btn btn-outline-light me-2 position-relative">
-                        <i class="fas fa-shopping-cart"></i>
-                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="cart-count">
-                            0
-                        </span>
-                    </a>
+                    <div class="position-relative me-2">
+                        <a href="${pageContext.request.contextPath}/carrinho" class="btn btn-outline-light">
+                            <i class="fas fa-shopping-cart"></i>
+                            <span class="cart-badge" id="cart-count" style="display: none;">0</span>
+                        </a>
+                    </div>
                     
                     <c:choose>
                         <c:when test="${not empty sessionScope.usuarioNome}">
@@ -492,8 +507,8 @@
                     <p class="mb-0">Receba em primeira mão lançamentos, promoções exclusivas e recomendações personalizadas.</p>
                 </div>
                 <div class="col-lg-6">
-                    <form class="d-flex">
-                        <input type="email" class="form-control me-2" placeholder="Seu melhor e-mail">
+                    <form class="d-flex" id="newsletter-form">
+                        <input type="email" class="form-control me-2" placeholder="Seu melhor e-mail" id="newsletter-email">
                         <button class="btn btn-light" type="submit">
                             <i class="fas fa-paper-plane me-1"></i>Inscrever
                         </button>
@@ -595,14 +610,33 @@
                 </c:choose>
             });
             
-            // Atualizar contador do carrinho
+            // Atualizar contador do carrinho ao carregar a página
             atualizarContadorCarrinho();
             
             // Animações de entrada
             animateOnScroll();
+            
+            // Newsletter
+            $('#newsletter-form').on('submit', function(e) {
+                e.preventDefault();
+                const email = $('#newsletter-email').val();
+                
+                if (email && isValidEmail(email)) {
+                    showNotification('Email cadastrado com sucesso! Você receberá nossas novidades.', 'success');
+                    $('#newsletter-email').val('');
+                } else {
+                    showNotification('Por favor, informe um email válido.', 'error');
+                }
+            });
         });
         
         function adicionarAoCarrinho(livroId) {
+            const btn = $(`[data-livro-id="${livroId}"]`);
+            const originalHtml = btn.html();
+            
+            // Mostrar loading
+            btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i>');
+            
             $.ajax({
                 url: '${pageContext.request.contextPath}/carrinho',
                 method: 'POST',
@@ -615,21 +649,28 @@
                 success: function(response) {
                     if (response.sucesso) {
                         showNotification('Livro adicionado ao carrinho!', 'success');
-                        $('#cart-count').text(response.totalItens);
+                        
+                        // Atualizar contador do carrinho
+                        if (response.totalItens > 0) {
+                            $('#cart-count').text(response.totalItens).show();
+                        } else {
+                            $('#cart-count').hide();
+                        }
                         
                         // Animar botão
-                        const btn = $(`[data-livro-id="${livroId}"]`);
                         btn.html('<i class="fas fa-check"></i>').addClass('btn-success').removeClass('btn-primary');
                         
                         setTimeout(() => {
-                            btn.html('<i class="fas fa-cart-plus"></i>').removeClass('btn-success').addClass('btn-primary');
+                            btn.html(originalHtml).removeClass('btn-success').addClass('btn-primary').prop('disabled', false);
                         }, 2000);
                     } else {
                         showNotification('Erro ao adicionar ao carrinho', 'error');
+                        btn.html(originalHtml).prop('disabled', false);
                     }
                 },
                 error: function() {
                     showNotification('Erro de conexão', 'error');
+                    btn.html(originalHtml).prop('disabled', false);
                 }
             });
         }
@@ -647,6 +688,9 @@
                         } else {
                             $('#cart-count').hide();
                         }
+                    },
+                    error: function() {
+                        console.log('Erro ao buscar contador do carrinho');
                     }
                 });
             </c:if>
@@ -706,16 +750,10 @@
             });
         }
         
-        // Smooth scroll para âncoras
-        $('a[href^="#"]').on('click', function(e) {
-            e.preventDefault();
-            const target = $(this.getAttribute('href'));
-            if (target.length) {
-                $('html, body').animate({
-                    scrollTop: target.offset().top - 80
-                }, 800);
-            }
-        });
+        function isValidEmail(email) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return emailRegex.test(email);
+        }
         
         // Contador animado de estatísticas
         function animateCounters() {
@@ -782,18 +820,14 @@
             }
         });
         
-        // Newsletter
-        $('form').on('submit', function(e) {
-            if ($(this).find('input[type="email"]').length > 0) {
-                e.preventDefault();
-                const email = $(this).find('input[type="email"]').val();
-                
-                if (email) {
-                    showNotification('Email cadastrado com sucesso! Você receberá nossas novidades.', 'success');
-                    $(this).find('input[type="email"]').val('');
-                } else {
-                    showNotification('Por favor, informe um email válido.', 'error');
-                }
+        // Smooth scroll para âncoras
+        $('a[href^="#"]').on('click', function(e) {
+            e.preventDefault();
+            const target = $(this.getAttribute('href'));
+            if (target.length) {
+                $('html, body').animate({
+                    scrollTop: target.offset().top - 80
+                }, 800);
             }
         });
         
@@ -821,6 +855,76 @@
                 imageObserver.observe(img);
             });
         }
+        
+        // Prevenção de double-click nos botões
+        $('.btn').on('click', function() {
+            const btn = $(this);
+            if (btn.hasClass('processing')) {
+                return false;
+            }
+            btn.addClass('processing');
+            setTimeout(() => {
+                btn.removeClass('processing');
+            }, 1000);
+        });
+        
+        // Melhorar UX do carrinho
+        function updateCartUI() {
+            <c:if test="${not empty sessionScope.usuarioId}">
+                // Atualizar periodicamente o contador do carrinho
+                setInterval(atualizarContadorCarrinho, 30000); // A cada 30 segundos
+            </c:if>
+        }
+        
+        // Inicializar melhorias de UX
+        updateCartUI();
+        
+        // Animação de entrada da página
+        $(window).on('load', function() {
+            $('.hero-section h1').addClass('animate__animated animate__fadeInLeft');
+            $('.hero-section p').addClass('animate__animated animate__fadeInLeft animate__delay-1s');
+            $('.search-box').addClass('animate__animated animate__fadeInUp animate__delay-2s');
+        });
+        
+        // Tooltip para botões desabilitados
+        $('[data-bs-toggle="tooltip"]').tooltip();
+        
+        // Feedback visual melhorado
+        $('.btn-add-cart').hover(
+            function() {
+                if (!$(this).prop('disabled')) {
+                    $(this).find('i').addClass('fa-bounce');
+                }
+            },
+            function() {
+                $(this).find('i').removeClass('fa-bounce');
+            }
+        );
+        
+        // Confirmação de ações importantes
+        $('.btn-danger').on('click', function(e) {
+            if (!confirm('Tem certeza que deseja realizar esta ação?')) {
+                e.preventDefault();
+                return false;
+            }
+        });
+        
+        // Melhorar acessibilidade
+        $('.book-card').on('keypress', function(e) {
+            if (e.which === 13) { // Enter key
+                $(this).find('a').first()[0].click();
+            }
+        });
+        
+        // Auto-hide de notificações após tempo
+        $(document).on('shown.bs.alert', '.alert', function() {
+            const alert = $(this);
+            setTimeout(() => {
+                alert.fadeOut('slow', function() {
+                    $(this).remove();
+                });
+            }, 5000);
+        });
     </script>
 </body>
 </html>

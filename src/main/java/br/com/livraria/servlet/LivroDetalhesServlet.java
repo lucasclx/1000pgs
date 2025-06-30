@@ -16,7 +16,7 @@ import java.util.List;
 /**
  * Servlet para detalhes do livro
  */
- @WebServlet("/livro")
+@WebServlet({"/livro", "/livro-detalhes"})
 public class LivroDetalhesServlet extends HttpServlet {
     private LivroDAO livroDAO = new LivroDAO();
     private AvaliacaoDAO avaliacaoDAO = new AvaliacaoDAO();
@@ -26,12 +26,17 @@ public class LivroDetalhesServlet extends HttpServlet {
             throws ServletException, IOException {
         String idStr = request.getParameter("id");
         
+        if (idStr == null || idStr.trim().isEmpty()) {
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "ID do livro é obrigatório");
+            return;
+        }
+        
         try {
             int livroId = Integer.parseInt(idStr);
             Livro livro = livroDAO.buscarPorId(livroId);
             
             if (livro == null) {
-                response.sendError(HttpServletResponse.SC_NOT_FOUND);
+                response.sendError(HttpServletResponse.SC_NOT_FOUND, "Livro não encontrado");
                 return;
             }
             
@@ -51,7 +56,7 @@ public class LivroDetalhesServlet extends HttpServlet {
             
             request.getRequestDispatcher("/pages/livro-detalhes.jsp").forward(request, response);
         } catch (NumberFormatException e) {
-            response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "ID do livro inválido");
         }
     }
 }
