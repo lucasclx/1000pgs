@@ -64,7 +64,7 @@ log_info "Compilando classes principais..."
 
 # Primeiro, tentar compilar apenas models e utils (sem servlets)
 log_info "Compilando models e utils..."
-javac -d build/classes -cp "lib/*" \
+javac -d build/classes -cp "src/main/webapp/WEB-INF/src/main/webapp/WEB-INF/lib/*" \
     src/main/java/br/com/livraria/model/*.java \
     src/main/java/br/com/livraria/util/*.java
 
@@ -73,7 +73,7 @@ if [ $? -eq 0 ]; then
     
     # Agora tentar compilar DAOs
     log_info "Compilando DAOs..."
-    javac -d build/classes -cp "lib/*:build/classes" \
+    javac -d build/classes -cp "src/main/webapp/WEB-INF/lib/*:build/classes" \
         src/main/java/br/com/livraria/dao/*.java
     
     if [ $? -eq 0 ]; then
@@ -81,7 +81,7 @@ if [ $? -eq 0 ]; then
         
         # Tentar compilar servlets (pode falhar se não tiver servlet-api)
         log_info "Compilando servlets e filtros..."
-        javac -d build/classes -cp "lib/*:build/classes" \
+        javac -d build/classes -cp "src/main/webapp/WEB-INF/lib/*:build/classes" \
             src/main/java/br/com/livraria/servlet/**/*.java \
             src/main/java/br/com/livraria/filter/*.java \
             src/main/java/br/com/livraria/listener/*.java 2>/dev/null
@@ -117,7 +117,7 @@ find build/classes -name "*.class" | head -10 | sed 's/build\/classes\///g' | se
 
 # 6. Compilar classes de teste
 log_info "Compilando classes de teste..."
-javac -d build/test-classes -cp "lib/*:build/classes" src/test/java/br/com/livraria/**/*.java
+javac -d build/test-classes -cp "src/main/webapp/WEB-INF/lib/*:build/classes" src/test/java/br/com/livraria/**/*.java
 
 if [ $? -eq 0 ]; then
     log_success "Classes de teste compiladas com sucesso"
@@ -132,7 +132,7 @@ else
     for test_file in src/test/java/br/com/livraria/**/*Test.java; do
         if [ -f "$test_file" ]; then
             echo "Tentando compilar: $test_file"
-            javac -d build/test-classes -cp "lib/*:build/classes" "$test_file" 2>&1 | head -5
+            javac -d build/test-classes -cp "src/main/webapp/WEB-INF/lib/*:build/classes" "$test_file" 2>&1 | head -5
             echo "---"
         fi
     done
@@ -142,8 +142,8 @@ fi
 
 # 7. Verificar se JUnit está disponível
 log_info "Verificando JUnit..."
-if [ ! -f "lib/junit-platform-console-standalone-1.9.2.jar" ]; then
-    log_error "JUnit não encontrado em lib/"
+if [ ! -f "src/main/webapp/WEB-INF/lib/junit-platform-console-standalone-1.10.1.jar" ]; then
+    log_error "JUnit não encontrado em src/main/webapp/WEB-INF/lib/"
     exit 1
 else
     log_success "JUnit encontrado"
@@ -156,8 +156,8 @@ echo "========================================"
 # Primeiro tentar executar apenas testes de model e util (que não dependem de servlet)
 log_info "Executando testes de Model e Util (sem dependências externas)..."
 
-java -jar lib/junit-platform-console-standalone-1.9.2.jar \
-  --class-path "lib/*:build/classes:build/test-classes" \
+java -jar src/main/webapp/WEB-INF/lib/junit-platform-console-standalone-1.10.1.jar \
+  --class-path "src/main/webapp/WEB-INF/lib/*:build/classes:build/test-classes" \
   --select-package br.com.livraria.model \
   --select-package br.com.livraria.util \
   --details=tree
@@ -176,8 +176,8 @@ fi
 # Tentar executar testes de DAO (que dependem de banco de dados)
 log_info "Executando testes de DAO (requerem banco de dados)..."
 
-java -jar lib/junit-platform-console-standalone-1.9.2.jar \
-  --class-path "lib/*:build/classes:build/test-classes" \
+java -jar src/main/webapp/WEB-INF/lib/junit-platform-console-standalone-1.10.1.jar \
+  --class-path "src/main/webapp/WEB-INF/lib/*:build/classes:build/test-classes" \
   --select-package br.com.livraria.dao \
   --details=tree
 
@@ -196,11 +196,11 @@ fi
 log_info "Estatísticas finais:"
 echo "- Classes principais: $(find build/classes -name "*.class" | wc -l)"
 echo "- Classes de teste: $(find build/test-classes -name "*.class" | wc -l)"
-echo "- Arquivos JAR em lib: $(ls lib/*.jar | wc -l)"
+echo "- Arquivos JAR em lib: $(ls src/main/webapp/WEB-INF/lib/*.jar | wc -l)"
 
 # 10. Verificar conexão com banco (opcional)
 log_info "Verificando conectividade com banco de dados..."
-java -cp "lib/*:build/classes" br.com.livraria.util.ConexaoDB 2>/dev/null
+java -cp "src/main/webapp/WEB-INF/lib/*:build/classes" br.com.livraria.util.ConexaoDB 2>/dev/null
 if [ $? -eq 0 ]; then
     log_success "Conexão com banco de dados OK"
 else
@@ -211,11 +211,11 @@ echo ""
 log_success "Build concluído! ✨"
 echo ""
 echo "Para executar apenas testes específicos:"
-echo "java -jar lib/junit-platform-console-standalone-1.9.2.jar \\"
-echo "  --class-path \"lib/*:build/classes:build/test-classes\" \\"
+echo "java -jar src/main/webapp/WEB-INF/lib/junit-platform-console-standalone-1.10.1.jar \\"
+echo "  --class-path \"src/main/webapp/WEB-INF/lib/*:build/classes:build/test-classes\" \\"
 echo "  --select-class br.com.livraria.model.LivroTest"
 echo ""
 echo "Para executar apenas testes que não precisam de banco:"
-echo "java -jar lib/junit-platform-console-standalone-1.9.2.jar \\"
-echo "  --class-path \"lib/*:build/classes:build/test-classes\" \\"
+echo "java -jar src/main/webapp/WEB-INF/lib/junit-platform-console-standalone-1.10.1.jar \\"
+echo "  --class-path \"src/main/webapp/WEB-INF/lib/*:build/classes:build/test-classes\" \\"
 echo "  --select-package br.com.livraria.model"

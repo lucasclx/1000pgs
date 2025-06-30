@@ -27,10 +27,16 @@ class CarrinhoDAOTest {
 
     @BeforeEach
     void setUp() throws SQLException {
+        conn = ConexaoDB.obterConexao();
+        // Limpa dados de testes anteriores para garantir a idempotência
+        try (PreparedStatement stmt = conn.prepareStatement("DELETE FROM livros WHERE titulo = 'Livro Carrinho'")) { stmt.executeUpdate(); }
+        try (PreparedStatement stmt = conn.prepareStatement("DELETE FROM usuarios WHERE email = 'teste@carrinho.com'")) { stmt.executeUpdate(); }
+        try (PreparedStatement stmt = conn.prepareStatement("DELETE FROM categorias WHERE nome = 'Cat Teste'")) { stmt.executeUpdate(); }
+        try (PreparedStatement stmt = conn.prepareStatement("DELETE FROM autores WHERE nome = 'Autor Teste'")) { stmt.executeUpdate(); }
+
         carrinhoDAO = new CarrinhoDAO();
         usuarioDAO = new UsuarioDAO();
         livroDAO = new LivroDAO();
-        conn = ConexaoDB.obterConexao();
         
         // Criar usuário e livro para teste
         Usuario usuario = new Usuario("User Teste", "teste@carrinho.com", "senha123");
@@ -40,7 +46,7 @@ class CarrinhoDAOTest {
         
         // Criar livro básico para teste
         try (PreparedStatement stmt = conn.prepareStatement(
-                "INSERT INTO categorias (nome) VALUES ('Cat Teste')",
+                "INSERT IGNORE INTO categorias (nome) VALUES ('Cat Teste')",
                 PreparedStatement.RETURN_GENERATED_KEYS)) {
             stmt.executeUpdate();
             var rs = stmt.getGeneratedKeys();
@@ -48,7 +54,7 @@ class CarrinhoDAOTest {
             int catId = rs.getInt(1);
             
             try (PreparedStatement stmt2 = conn.prepareStatement(
-                    "INSERT INTO autores (nome) VALUES ('Autor Teste')",
+                    "INSERT IGNORE INTO autores (nome) VALUES ('Autor Teste')",
                     PreparedStatement.RETURN_GENERATED_KEYS)) {
                 stmt2.executeUpdate();
                 var rs2 = stmt2.getGeneratedKeys();
@@ -73,8 +79,19 @@ class CarrinhoDAOTest {
     void tearDown() throws SQLException {
         carrinhoDAO.limpar(usuarioTesteId);
         
-        try (PreparedStatement stmt = conn.prepareStatement(
-                "DELETE FROM usuarios WHERE email = 'teste@carrinho.com'")) {
+        // Delete books first to satisfy foreign key constraints
+        try (PreparedStatement stmt = conn.prepareStatement("DELETE FROM livros WHERE titulo = 'Livro Carrinho'")) {
+            stmt.executeUpdate();
+        }
+        
+        // Then delete users, categories, and authors
+        try (PreparedStatement stmt = conn.prepareStatement("DELETE FROM usuarios WHERE email = 'teste@carrinho.com'")) {
+            stmt.executeUpdate();
+        }
+        try (PreparedStatement stmt = conn.prepareStatement("DELETE FROM categorias WHERE nome = 'Cat Teste'")) {
+            stmt.executeUpdate();
+        }
+        try (PreparedStatement stmt = conn.prepareStatement("DELETE FROM autores WHERE nome = 'Autor Teste'")) {
             stmt.executeUpdate();
         }
         

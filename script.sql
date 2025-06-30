@@ -3,7 +3,8 @@
 -- ============================================
 
 -- Criar banco de dados (se não existir)
-CREATE DATABASE IF NOT EXISTS ecommerce_livraria 
+DROP DATABASE IF EXISTS ecommerce_livraria;
+CREATE DATABASE ecommerce_livraria 
 CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 USE ecommerce_livraria;
