@@ -1,7 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
-<%@ taglib uri="http://livraria.com/functions" prefix="fn" %>
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -425,7 +424,7 @@
                                             </div>
                                         </div>
                                         <small class="text-muted">
-                                            ${fn:formatarData(avaliacao.dataAvaliacao)}
+                                            <fmt:formatDate value="${avaliacao.dataAvaliacao}" pattern="dd/MM/yyyy"/>
                                         </small>
                                     </div>
                                     <p class="mb-0">${avaliacao.comentario}</p>
